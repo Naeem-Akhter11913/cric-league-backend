@@ -1,0 +1,18 @@
+module.exports = {
+  User: require('./user.model'),
+  Organization: require('./organization.model'),
+  Player: require('./player.model'),
+  Team: require('./team.model'),
+  TeamPlayer: require('./teamPlayer.model'),
+  Tournament: require('./tournament.model'),
+  TournamentSquad: require('./tournamentSquad.model'),
+  Venue: require('./venue.model'),
+  Match: require('./match.model'),
+  PlayingXI: require('./playingXI.model'),
+  Innings: require('./innings.model'),
+  Ball: require('./ball.model'),
+  PointsTable: require('./pointsTable.model'),
+  PlayerStats: require('./playerStats.model'),
+  TeamStats: require('./teamStats.model'),
+  Notification: require('./notification.model'),
+};
