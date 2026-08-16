@@ -51,6 +51,7 @@ async function login({ email, password }) {
 async function refresh(refreshToken) {
   let payload;
   try {
+    // console.log(refreshToken);
     payload = jwt.verify(refreshToken, env.jwt.refreshSecret);
   } catch (err) {
     throw new ApiError(401, 'Invalid or expired refresh token');
