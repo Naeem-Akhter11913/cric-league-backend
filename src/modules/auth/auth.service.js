@@ -14,7 +14,8 @@ function generateTokens(user) {
   return { accessToken, refreshToken };
 }
 
-async function register({ name, email, password, phone, role }) {
+async function register({ name, email, password, phone=null, role }) {
+  console.log({name, email, password, phone, role})
   const existing = await User.findOne({ email });
   if (existing) throw new ApiError(409, 'Email already registered');
 
