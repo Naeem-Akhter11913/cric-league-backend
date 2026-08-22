@@ -6,6 +6,8 @@ const teamSchema = new Schema(
     logoUrl: { type: String },
     managerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     homeVenue: { type: Schema.Types.ObjectId, ref: 'Venue' },
+    tournament: {type: Schema.Types.ObjectId, ref: 'Tournament', required: true},
+    players:[{ type: Schema.Types.ObjectId, ref: 'Player' }],
     status: { type: String, enum: ['pending', 'approved', 'suspended'], default: 'pending' },
   },
   { timestamps: true }

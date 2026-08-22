@@ -60,7 +60,6 @@ const cookieOptions = {
 };
 
 const register = catchAsync(async (req, res) => {
-  console.log(req.body)
   const { user, accessToken, refreshToken } = await authService.register(req.body);
   // res.cookie(REFRESH_COOKIE_NAME, refreshToken, cookieOptions);
   apiResponse(res, 201, 'Registered successfully', {
@@ -94,9 +93,9 @@ const login = catchAsync(async (req, res) => {
 const refresh = catchAsync(async (req, res) => {
   try {
     const refreshToken = req.cookies[REFRESH_COOKIE_NAME];
-    const tokens = await authService.refresh(refreshToken);
+    const {tokens,userDetails} = await authService.refresh(refreshToken);
     res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, cookieOptions); // rotate: set the new one back 
-    apiResponse(res, 200, 'Token refreshed', { accessToken: tokens.accessToken });
+    apiResponse(res, 200, 'Token refreshed', { accessToken: tokens.accessToken,userDetails });
   } catch (error) {
     console.log(error);
   }

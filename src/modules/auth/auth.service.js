@@ -67,9 +67,11 @@ async function refresh(refreshToken) {
   user.refreshTokens = user.refreshTokens.filter((t) => t !== refreshToken);
   const tokens = generateTokens(user);
   user.refreshTokens.push(tokens.refreshToken);
+  const obj = user;
+  const {passwordHash,refreshTokens,...rest} = obj.toObject();
   await user.save();
 
-  return tokens;
+  return {tokens,userDetails:rest};
 }
 
 async function logout(userId, refreshToken) {
