@@ -13,7 +13,7 @@ const createProfile = catchAsync(async (req, res) => {
 });
 
 const getMyProfile = catchAsync(async (req, res) => {
-  const player = await Player.findOne({ userId: req.user.id }).populate('userId', 'name email');
+  const player = await Player.findOne({ userId: req.user._id }).populate('userId', 'name email');
   if (!player) throw new ApiError(404, 'Player profile not found');
   apiResponse(res, 200, 'Player profile fetched', player);
 });

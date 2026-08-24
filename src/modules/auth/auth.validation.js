@@ -6,7 +6,7 @@ const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
     phone: z.string().optional(),
-    role: z.enum(['super_admin', 'organizer', 'team_manager', 'player', 'scorer']),
+    // role: z.enum(['super_admin', 'organizer', 'team_manager', 'player', 'scorer']),
   }),
 });
 

@@ -60,8 +60,7 @@ const cookieOptions = {
 };
 
 const register = catchAsync(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.register(req.body);
-  // res.cookie(REFRESH_COOKIE_NAME, refreshToken, cookieOptions);
+  const { user } = await authService.register(req.body);
   apiResponse(res, 201, 'Registered successfully', {
     user: {
       id: user._id,
@@ -70,8 +69,6 @@ const register = catchAsync(async (req, res) => {
       role: user.role,
       status: user.status
     },
-    // accessToken,
-    // refreshToken removed from the JSON body — it now lives only in the httpOnly cookie
   });
 });
 
@@ -91,14 +88,10 @@ const login = catchAsync(async (req, res) => {
 });
 
 const refresh = catchAsync(async (req, res) => {
-  try {
-    const refreshToken = req.cookies[REFRESH_COOKIE_NAME];
-    const {tokens,userDetails} = await authService.refresh(refreshToken);
-    res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, cookieOptions); // rotate: set the new one back 
-    apiResponse(res, 200, 'Token refreshed', { accessToken: tokens.accessToken,userDetails });
-  } catch (error) {
-    console.log(error);
-  }
+  const refreshToken = req.cookies[REFRESH_COOKIE_NAME];
+  const { tokens, userDetails } = await authService.refresh(refreshToken);
+  res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, cookieOptions); // rotate: set the new one back 
+  apiResponse(res, 200, 'Token refreshed', { accessToken: tokens.accessToken, userDetails });
 });
 
 const logout = catchAsync(async (req, res) => {

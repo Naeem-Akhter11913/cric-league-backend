@@ -3,7 +3,7 @@ const { Schema, model } = require('mongoose');
 const playerSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },// Play id
-    forPlayer: { type: Schema.Types.ObjectId, ref: 'User', required: true },// This flag will be used to identify the player for whom it is intended.
+    forPlayer: { type: Schema.Types.ObjectId, ref: 'User', required: false },// This flag will be used to identify the player for whom it is intended.
     personalInfo: {
       dob: Date,
       gender: String,
@@ -19,8 +19,12 @@ const playerSchema = new Schema(
     isIndependent: { type: Boolean, default: true },
     verified: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+    availability: {
+      type: String, enum: ["Available", "Injured", "Unavailable", "Rested",
+        "Retired",], default: 'Available'
+    },
   },
   { timestamps: true }
-); 
+);
 
 module.exports = model('Player', playerSchema);

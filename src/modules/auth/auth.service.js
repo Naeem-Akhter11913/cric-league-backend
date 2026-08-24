@@ -15,7 +15,6 @@ function generateTokens(user) {
 }
 
 async function register({ name, email, password, phone=null, role }) {
-  console.log({name, email, password, phone, role})
   const existing = await User.findOne({ email });
   if (existing) throw new ApiError(409, 'Email already registered');
 
@@ -26,11 +25,11 @@ async function register({ name, email, password, phone=null, role }) {
 
   const user = await User.create({ name, email, phone, passwordHash, role, status });
 
-  const tokens = generateTokens(user);
-  user.refreshTokens.push(tokens.refreshToken);
+  // const tokens = generateTokens(user);
+  // user.refreshTokens.push(tokens.refreshToken);
   await user.save();
 
-  return { user, ...tokens };
+  return { user };
 }
 
 async function login({ email, password }) {
@@ -52,7 +51,6 @@ async function login({ email, password }) {
 async function refresh(refreshToken) {
   let payload;
   try {
-    // console.log(refreshToken);
     payload = jwt.verify(refreshToken, env.jwt.refreshSecret);
   } catch (err) {
     throw new ApiError(401, 'Invalid or expired refresh token');
@@ -62,6 +60,7 @@ async function refresh(refreshToken) {
   if (!user || !user.refreshTokens.includes(refreshToken)) {
     throw new ApiError(401, 'Refresh token not recognized');
   }
+
 
   // rotate refresh token
   user.refreshTokens = user.refreshTokens.filter((t) => t !== refreshToken);

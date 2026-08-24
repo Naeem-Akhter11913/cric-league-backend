@@ -8,9 +8,10 @@ function validate(schema) {
       params: req.params,
       query: req.query,
     });
-
+console.log(req.body,result.error);
     if (!result.success) {
       const details = result.error.flatten();
+      console.log(details)
       return next(new ApiError(400, 'Validation failed', details));
     }
 
