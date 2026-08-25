@@ -1,4 +1,4 @@
-const { Team, TeamPlayer } = require('../../models');
+const { Team, TeamPlayer, Player } = require('../../models');
 const catchAsync = require('../../utils/catchAsync');
 const apiResponse = require('../../utils/apiResponse');
 const ApiError = require('../../utils/apiError');
@@ -15,8 +15,10 @@ const getById = catchAsync(async (req, res) => {
 });
 
 const list = catchAsync(async (req, res) => {
-  const teams = await Team.find();
-  apiResponse(res, 200, 'Teams fetched', teams);
+  const player = await Player.find({
+    forPlayer: req.user.id
+  });
+  apiResponse(res, 200, 'Teams fetched', player);
 });
 
 const updateTeam = catchAsync(async (req, res) => {
