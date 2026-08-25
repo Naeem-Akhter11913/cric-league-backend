@@ -13,7 +13,7 @@ const createProfile = catchAsync(async (req, res) => {
 });
 
 const getMyProfile = catchAsync(async (req, res) => {
-  const player = await Player.findOne({ userId: req.user._id }).populate('userId', 'name email');
+  const player = await Player.findOne({ userId: req.user.id }).populate('userId', 'name email');
   if (!player) throw new ApiError(404, 'Player profile not found');
   apiResponse(res, 200, 'Player profile fetched', player);
 });
@@ -26,15 +26,26 @@ const getById = catchAsync(async (req, res) => {
 
 const list = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const players = await Player.find()
-    .populate('userId', 'name email')
+  const organizer = await User.find(
+    { role: 'organizer' },
+    { _id: 1, name: 1, email: 1 }
+  )
     .skip((page - 1) * limit)
     .limit(Number(limit));
-  apiResponse(res, 200, 'Players fetched', players);
+  apiResponse(res, 200, 'Players fetched', organizer);
 });
 
 const updateMyProfile = catchAsync(async (req, res) => {
-  const player = await Player.findOneAndUpdate({ userId: req.user.id }, req.body, { new: true });
+ 
+  const player = await Player.findOneAndUpdate(
+    { userId: req.user.id },
+    { $set: req.body },
+    {
+      new: true,
+      strict: false,
+      upsert: true
+    }
+  );
   if (!player) throw new ApiError(404, 'Player profile not found');
   apiResponse(res, 200, 'Player profile updated', player);
 });

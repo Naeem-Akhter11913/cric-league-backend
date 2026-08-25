@@ -17,6 +17,7 @@ const playerSchema = new Schema(
       enum: ['batter', 'bowler', 'all_rounder', 'wicket_keeper'],
     },
     isIndependent: { type: Boolean, default: true },
+    isWicketKeeper: { type: Boolean, default: true },
     verified: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
     availability: {
