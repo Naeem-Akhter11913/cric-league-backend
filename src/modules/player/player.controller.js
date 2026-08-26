@@ -26,17 +26,27 @@ const getById = catchAsync(async (req, res) => {
 
 const list = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const organizer = await User.find(
-    { role: 'organizer' },
-    { _id: 1, name: 1, email: 1 }
-  )
+  // In future getting organization might have to write in different controller
+  const players = await Player.find(
+    { role: 'player' },
+  ).populate('userId',"name email phone role status")
     .skip((page - 1) * limit)
     .limit(Number(limit));
-  apiResponse(res, 200, 'Players fetched', organizer);
+  apiResponse(res, 200, 'Players fetched', players);
 });
+// const list = catchAsync(async (req, res) => {
+//   const { page = 1, limit = 20 } = req.query;
+//   const organizer = await User.find(
+//     { role: 'organizer' },
+//     { _id: 1, name: 1, email: 1 }
+//   )
+//     .skip((page - 1) * limit)
+//     .limit(Number(limit));
+//   apiResponse(res, 200, 'Players fetched', organizer);
+// });
 
 const updateMyProfile = catchAsync(async (req, res) => {
- 
+
   const player = await Player.findOneAndUpdate(
     { userId: req.user.id },
     { $set: req.body },

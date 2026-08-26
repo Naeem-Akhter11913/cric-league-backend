@@ -6,7 +6,7 @@ const ApiError = require('../../utils/apiError');
 const createTeam = catchAsync(async (req, res) => {
   const team = await Team.create({ ...req.body, managerId: req.user.id });
   apiResponse(res, 201, 'Team created (pending approval)', team);
-});
+}); 
 
 const getById = catchAsync(async (req, res) => {
   const team = await Team.findById(req.params.id);
@@ -15,10 +15,13 @@ const getById = catchAsync(async (req, res) => {
 });
 
 const list = catchAsync(async (req, res) => {
-  const player = await Player.find({
-    forPlayer: req.user.id
-  });
-  apiResponse(res, 200, 'Teams fetched', player);
+  const { page = 1, limit = 20 } = req.query;
+  // console.log(req.query)
+  const team = await Team.find()
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+    console.log(team)
+  apiResponse(res, 200, 'Teams fetched', team);
 });
 
 const updateTeam = catchAsync(async (req, res) => {

@@ -14,7 +14,7 @@ router.use('/teams', require('../modules/team/team.routes'));
 // router.use('/stats', require('../modules/stats/stats.routes'));
 // router.use('/points-table', require('../modules/pointsTable/pointsTable.routes'));
 // router.use('/admin', require('../modules/superAdmin/superAdmin.routes'));
-// router.use('/organizer', require('../modules/organizer/organizer.routes'));
+router.use('/organizer', require('../modules/organizer/organizer.routes'));
 // router.use('/notifications', require('../modules/notification/notification.routes'));
 
 router.get('/health', (req, res) => res.json({ success: true, message: 'API is healthy' }));
