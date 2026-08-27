@@ -2,11 +2,12 @@ const { Team, TeamPlayer, Player } = require('../../models');
 const catchAsync = require('../../utils/catchAsync');
 const apiResponse = require('../../utils/apiResponse');
 const ApiError = require('../../utils/apiError');
+const { default: mongoose } = require('mongoose');
 
 const createTeam = catchAsync(async (req, res) => {
   const team = await Team.create({ ...req.body, managerId: req.user.id });
   apiResponse(res, 201, 'Team created (pending approval)', team);
-}); 
+});
 
 const getById = catchAsync(async (req, res) => {
   const team = await Team.findById(req.params.id);
@@ -16,11 +17,19 @@ const getById = catchAsync(async (req, res) => {
 
 const list = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  // console.log(req.query)
-  const team = await Team.find()
-    .skip((page - 1) * limit)
-    .limit(Number(limit));
-    console.log(team)
+  const team = await Team.aggregate([
+    {
+      $match: {
+        managerId: new mongoose.Types.ObjectId(req.user.id)
+      }
+    },
+    {
+      $skip: (page - 1) * limit
+    },
+    {
+      $limit: Number(limit)
+    }
+  ]);
   apiResponse(res, 200, 'Teams fetched', team);
 });
 

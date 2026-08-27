@@ -10,7 +10,7 @@ router.use('/teams', require('../modules/team/team.routes'));
 // router.use('/tournaments', require('../modules/tournament/tournament.routes'));
 // router.use('/matches', require('../modules/match/match.routes'));
 // router.use('/scoring', require('../modules/scoring/scoring.routes'));
-// router.use('/venues', require('../modules/venue/venue.routes'));
+router.use('/venues', require('../modules/venue/venue.routes'));
 // router.use('/stats', require('../modules/stats/stats.routes'));
 // router.use('/points-table', require('../modules/pointsTable/pointsTable.routes'));
 // router.use('/admin', require('../modules/superAdmin/superAdmin.routes'));
