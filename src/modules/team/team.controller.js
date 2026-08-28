@@ -24,7 +24,7 @@ const list = catchAsync(async (req, res) => {
       }
     },
     {
-      $skip: (page - 1) * limit
+      $skip: (Number(page) - 1) * limit
     },
     {
       $limit: Number(limit)

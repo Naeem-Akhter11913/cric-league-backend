@@ -7,7 +7,7 @@ const { ROLES } = require('../../utils/constants');
 const router = express.Router();
 
 router.post('/', authenticate, authorize([ROLES.ORGANIZER]), controller.createVenue);
-// router.get('/', authenticate , controller.list);
+router.get('/', authenticate , controller.list);
 // router.get('/:id', controller.getById);
 // router.patch('/:id', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.updateTeam);
 // router.post('/:id/players', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.addPlayer);
