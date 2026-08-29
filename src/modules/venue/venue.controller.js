@@ -32,5 +32,35 @@ const list = catchAsync(async (req, res) => {
   });
 });
 
+const updateVenue = catchAsync(async (req, res) => {
+  const { venueId } = req.params;
+  const authorId = req.user.id;
+  const venueDetails = req.body;
 
-module.exports = { createVenue, list }
+  const updatedVenue = await Venue.findOneAndUpdate(
+    { _id: new mongoose.Types.ObjectId(venueId), createdBy: new mongoose.Types.ObjectId(authorId) },
+    { $set: venueDetails },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedVenue) {
+    throw new ApiError(404, 'Venue not found or you are not authorized to update it');
+  }
+
+  apiResponse(res, 200, 'Venue updated successfully', updatedVenue);
+});
+
+
+const deleteVenue = catchAsync(async (req, res) => {
+  const { venueId } = req.params;
+  const authorId = req.user.id;
+  console.log({venueId,authorId})
+  await Venue.findOneAndDelete({
+    createdBy: new mongoose.Types.ObjectId(authorId),
+    _id: new mongoose.Types.ObjectId(venueId)
+  })
+  apiResponse(res, 200, 'Venue deleted successfully');
+})
+
+
+module.exports = { createVenue, list, updateVenue, deleteVenue }

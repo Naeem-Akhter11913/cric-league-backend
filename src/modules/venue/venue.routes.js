@@ -9,7 +9,8 @@ const router = express.Router();
 router.post('/', authenticate, authorize([ROLES.ORGANIZER]), controller.createVenue);
 router.get('/', authenticate , controller.list);
 // router.get('/:id', controller.getById);
-// router.patch('/:id', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.updateTeam);
+router.patch('/:venueId', authenticate, authorize([ROLES.ORGANIZER]), controller.updateVenue);
+router.delete('/:venueId', authenticate, authorize([ROLES.ORGANIZER]), controller.deleteVenue);
 // router.post('/:id/players', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.addPlayer);
 // router.get('/:id/players', controller.listPlayers);
 

@@ -1,44 +1,3 @@
-// const { Schema, model } = require('mongoose');
-
-// const venueSchema = new Schema(
-//   {
-//     name: { type: String, required: true },
-//     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
-//     city: { type: String },
-
-//     surface: {
-//       type: { type: String },
-//       behavior: { type: String, default: null },
-//     },
-
-//     capacity: { type: Number, default: 0 },
-//     floodLights: { type: Boolean, default: true },
-//     indoorOutdoor: { type: String, enum: ['indoor', 'outdoor'], default: 'outdoor' },
-//     pitchCount: { type: Number, default: null },
-
-//     location: {
-//       latitude: { type: Number, default: null },
-//       longitude: { type: Number, default: null },
-//       mapLocation: { type: String, default: null },
-//     },
-
-//     contact: {
-//       name: { type: String, default: null },
-//       number: { type: String, default: null },
-//       email: { type: String, default: null },
-//     },
-
-//     description: { type: String, default: null },
-//     amenities: [{ type: String }],
-//     images: [{ type: String }],
-
-//   },
-//   { timestamps: true }
-// );
-
-// module.exports = model('Venue', venueSchema);
-
-
 
 const { Schema, model } = require('mongoose');
 
@@ -77,6 +36,7 @@ const venueSchema = new Schema(
     amenities: [{ type: String }],
     images: [{ type: String }],
     status: { type: String, enum: ['pending', 'approved', 'suspended'], default: 'pending' },
+    isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
