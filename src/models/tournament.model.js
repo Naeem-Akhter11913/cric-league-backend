@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 const tournamentSchema = new Schema(
   {
     name: { type: String, required: true },
+    logo: { type: String, require: true },
     organizerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     format: { type: String, enum: ['T20', 'ODI', 'Test', 'Custom'], default: 'T20' },
     startDate: { type: Date },

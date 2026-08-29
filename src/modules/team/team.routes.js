@@ -9,8 +9,8 @@ const router = express.Router();
 router.post('/', authenticate, authorize([ROLES.ORGANIZER]), controller.createTeam);
 router.get('/', authenticate , controller.list);
 router.get('/:id', controller.getById);
-router.patch('/:id', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.updateTeam);
-router.post('/:id/players', authenticate, authorize([ROLES.TEAM_MANAGER]), controller.addPlayer);
+router.patch('/:id', authenticate, authorize([ROLES.ORGANIZER]), controller.updateTeam);
+router.post('/:id/players', authenticate, authorize([ROLES.ORGANIZER]), controller.addPlayer);
 router.get('/:id/players', controller.listPlayers);
 
 module.exports = router;

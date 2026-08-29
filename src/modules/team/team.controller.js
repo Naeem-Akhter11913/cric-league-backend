@@ -15,22 +15,138 @@ const getById = catchAsync(async (req, res) => {
   apiResponse(res, 200, 'Team fetched', team);
 });
 
+// const list = catchAsync(async (req, res) => {
+//   const { page = 1, limit = 20 } = req.query;
+//   const team = await Team.aggregate([
+//     {
+//       $match: {
+//         managerId: new mongoose.Types.ObjectId(req.user.id)
+//       }
+//     },
+//     {
+//       $skip: (Number(page) - 1) * limit
+//     },
+//     {
+//       $limit: Number(limit)
+//     }
+//   ]);
+//   apiResponse(res, 200, 'Teams fetched', team);
+// });
+
+
+// const list = catchAsync(async (req, res) => {
+//   const { page = 1, limit = 20 } = req.query;
+
+//   const teams = await Team.aggregate([
+//     {
+//       $match: {
+//         managerId: new mongoose.Types.ObjectId(req.user.id)
+//       }
+//     },
+//     {
+//       $sort: { createdAt: -1 }
+//     },
+//     {
+//       $skip: (Number(page) - 1) * Number(limit)
+//     },
+//     {
+//       $limit: Number(limit)
+//     },
+
+//     // ---- Populate players (Player[]), each Player nested-populated with its User ----
+//     {
+//       $lookup: {
+//         from: 'players',
+//         let: { playerIds: '$players' },
+//         pipeline: [
+//           {
+//             $match: {
+//               $expr: { $in: ['$_id', '$$playerIds'] }
+//             }
+//           },
+//           {
+//             $lookup: {
+//               from: 'users',
+//               localField: 'userId',
+//               foreignField: '_id',
+//               as: 'userId'
+//             }
+//           },
+//           {
+//             $unwind: {
+//               path: '$userId',
+//               preserveNullAndEmptyArrays: true
+//             }
+//           }
+//         ],
+//         as: 'players'
+//       }
+//     }
+//   ]);
+
+//   apiResponse(res, 200, 'Teams fetched', teams);
+// });
+
 const list = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const team = await Team.aggregate([
+
+  const teams = await Team.aggregate([
     {
       $match: {
         managerId: new mongoose.Types.ObjectId(req.user.id)
       }
     },
     {
-      $skip: (Number(page) - 1) * limit
+      $sort: { createdAt: -1 }
+    },
+    {
+      $skip: (Number(page) - 1) * Number(limit)
     },
     {
       $limit: Number(limit)
+    },
+
+    // ---- Populate players (Player[]), each Player nested-populated with its User ----
+    {
+      $lookup: {
+        from: 'players',
+        let: { playerIds: '$players' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $in: ['$_id', '$$playerIds'] }
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'userId',
+              pipeline: [
+                {
+                  $project: {
+                    password: 0,
+                    refreshTokens: 0,
+                    passwordHash: 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $unwind: {
+              path: '$userId',
+              preserveNullAndEmptyArrays: true
+            }
+          }
+        ],
+        as: 'players'
+      }
     }
   ]);
-  apiResponse(res, 200, 'Teams fetched', team);
+
+  apiResponse(res, 200, 'Teams fetched', teams);
 });
 
 const updateTeam = catchAsync(async (req, res) => {
