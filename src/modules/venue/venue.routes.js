@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post('/', authenticate, authorize([ROLES.ORGANIZER]), controller.createVenue);
 router.get('/', authenticate , controller.list);
+router.get('/all', authenticate , controller.getAllVenues);
 // router.get('/:id', controller.getById);
 router.patch('/:venueId', authenticate, authorize([ROLES.ORGANIZER]), controller.updateVenue);
 router.delete('/:venueId', authenticate, authorize([ROLES.ORGANIZER]), controller.deleteVenue);

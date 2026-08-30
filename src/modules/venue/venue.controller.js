@@ -32,6 +32,12 @@ const list = catchAsync(async (req, res) => {
   });
 });
 
+const getAllVenues = catchAsync(async (req,res) => {
+  const venueList = await Venue.find();
+  const mappedVenues = venueList.map(item => ({id: item._id, name: item.name}))
+  apiResponse(res, 200, 'Venues fetched successfully', mappedVenues)
+})
+
 const updateVenue = catchAsync(async (req, res) => {
   const { venueId } = req.params;
   const authorId = req.user.id;
@@ -54,7 +60,7 @@ const updateVenue = catchAsync(async (req, res) => {
 const deleteVenue = catchAsync(async (req, res) => {
   const { venueId } = req.params;
   const authorId = req.user.id;
-  console.log({venueId,authorId})
+  console.log({ venueId, authorId })
   await Venue.findOneAndDelete({
     createdBy: new mongoose.Types.ObjectId(authorId),
     _id: new mongoose.Types.ObjectId(venueId)
@@ -63,4 +69,4 @@ const deleteVenue = catchAsync(async (req, res) => {
 })
 
 
-module.exports = { createVenue, list, updateVenue, deleteVenue }
+module.exports = { createVenue, list, updateVenue, deleteVenue, getAllVenues }
