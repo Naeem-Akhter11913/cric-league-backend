@@ -8,7 +8,7 @@ router.use('/teams', require('../modules/team/team.routes'));
 
 // Remaining modules follow the same pattern once fleshed out:
 router.use('/tournaments', require('../modules/tournament/tournament.routes'));
-// router.use('/matches', require('../modules/match/match.routes'));
+router.use('/matches', require('../modules/match/match.routes'));
 // router.use('/scoring', require('../modules/scoring/scoring.routes'));
 router.use('/venues', require('../modules/venue/venue.routes'));
 // router.use('/stats', require('../modules/stats/stats.routes'));
@@ -16,6 +16,7 @@ router.use('/venues', require('../modules/venue/venue.routes'));
 // router.use('/admin', require('../modules/superAdmin/superAdmin.routes'));
 router.use('/organizer', require('../modules/organizer/organizer.routes'));
 // router.use('/notifications', require('../modules/notification/notification.routes'));
+router.use('/playing', require('../modules/playingXI/playingXI.routes'));
 
 router.get('/health', (req, res) => res.json({ success: true, message: 'API is healthy' }));
 

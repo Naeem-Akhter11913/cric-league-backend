@@ -10,6 +10,12 @@ const router = express.Router();
 // router.get('/me', authenticate, authorize([ROLES.PLAYER]), controller.getMyProfile);
 // router.patch('/me', authenticate, authorize([ROLES.PLAYER]), controller.updateMyProfile);
 router.get('/', authenticate, controller.list);
+// router.post('/players', authenticate , controller.createPlayer)
 // router.get('/:id', controller.getById);
 
-module.exports = router
+router.get('/players/stats', authenticate, authorize('organizer'), controller.playerStats);
+router.get('/players', authenticate, authorize('organizer'), controller.listPlayers);
+router.post('/players', authenticate, authorize('organizer'), controller.createPlayer);
+router.delete('/players/:id', authenticate, authorize('organizer'), controller.removePlayer);
+
+module.exports = router;

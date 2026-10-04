@@ -12,5 +12,7 @@ router.get('/:id', controller.getById);
 router.patch('/:id', authenticate, authorize([ROLES.ORGANIZER]), controller.updateTeam);
 router.post('/:id/players', authenticate, authorize([ROLES.ORGANIZER]), controller.addPlayer);
 router.get('/:id/players', controller.listPlayers);
+router.delete('/:id/players', controller.deleteTeam);
+router.get('/teams/stats', authenticate, authorize('organizer'), controller.stats);
 
 module.exports = router;

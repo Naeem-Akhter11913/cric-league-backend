@@ -180,4 +180,48 @@ const listPlayers = catchAsync(async (req, res) => {
   apiResponse(res, 200, 'Team players fetched', players);
 });
 
-module.exports = { createTeam, getById, list, updateTeam, addPlayer, listPlayers };
+
+const deleteTeam = catchAsync(async (req, res) => {
+  const team = await Team.findByIdAndDelete(req.params.id);
+  if (!team) return apiResponse(res, 404, 'Team not found');
+  await PlayingXI.deleteMany({ teamId: team._id });
+  apiResponse(res, 200, 'Team deleted');
+});
+
+const stats = catchAsync(async (req, res) => {
+  const filter = {}; // if teams belong to one organizer: { createdBy: req.user._id }
+
+  const [byStatus, playerIds, tournamentIds, largest, totalPlayingXIs] = await Promise.all([
+    Team.aggregate([
+      { $match: filter },
+      { $group: { _id: { $toLower: { $ifNull: ['$status', ''] } }, count: { $sum: 1 } } },
+    ]),
+    Team.distinct('players', filter),       // distinct players across all squads
+    Team.distinct('tournament', filter),    // distinct tournaments
+    Team.aggregate([
+      { $match: filter },
+      { $project: { name: 1, playerCount: { $size: { $ifNull: ['$players', []] } } } },
+      { $sort: { playerCount: -1, name: 1 } },
+      { $limit: 1 },
+    ]),
+    PlayingXI.countDocuments(),             // scope this too if you scope teams
+  ]);
+
+  const c = Object.fromEntries(byStatus.map((s) => [s._id, s.count]));
+
+  apiResponse(res, 200, 'Team stats', {
+    totalTeams: byStatus.reduce((sum, s) => sum + s.count, 0),
+    activeTeams: c.active || 0,
+    inactiveTeams: c.inactive || 0,
+    blockedTeams: c.blocked || 0,
+    totalPlayers: playerIds.length,
+    tournamentsPlayed: tournamentIds.filter(Boolean).length,
+    totalPlayingXIs,
+    largestSquad: largest[0]
+      ? { _id: largest[0]._id, name: largest[0].name, playerCount: largest[0].playerCount }
+      : null,
+  });
+});
+// router.delete('/teams/:id', auth, authorize('organizer'), remove);
+
+module.exports = { createTeam, getById, list, updateTeam, addPlayer, listPlayers, deleteTeam, stats };

@@ -3,7 +3,7 @@ const { Schema, model } = require('mongoose');
 const userSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, required: true },
     phone: { type: String, trim: true },
     passwordHash: { type: String, required: true },
     // Origanization: This role will create the tournament and manage the rournamnet and can create and manage team also
