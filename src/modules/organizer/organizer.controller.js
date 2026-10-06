@@ -87,19 +87,33 @@ const createPlayer = catchAsync(async (req, res) => {
     createdUser = true;
   }
 
-  let player = await Player.findOne({ userId: user._id });
-  if (player && (player.forPlayer || []).some((o) => String(o) === String(orgId))) {
-    return apiResponse(res, 409, 'This player is already in your organization');
-  }
+  // let player = await Player.findOne({ userId: user._id });
+  // if (player && (player.forPlayer || []).some((o) => String(o) === String(orgId))) {
+  //   return apiResponse(res, 409, 'This player is already in your organization');
+  // }
 
+  // try {
+  //   if (!player) player = await Player.create({ userId: user._id, forPlayer: [orgId] });
+  //   else {
+  //     player.forPlayer.addToSet(orgId);
+  //     await player.save();
+  //   }
+  // } catch (err) {
+  //   if (createdUser) await User.deleteOne({ _id: user._id }); // don't leave an orphan user
+  //   throw err;
+  // }
+
+  let player = await Player.findOne({ userId: user._id });
+  if (player?.forPlayer) {
+    return String(player.forPlayer) === String(orgId)
+      ? apiResponse(res, 409, 'This player is already in your organization')
+      : apiResponse(res, 409, 'This player already belongs to another organization');
+  }
   try {
-    if (!player) player = await Player.create({ userId: user._id, forPlayer: [orgId] });
-    else {
-      player.forPlayer.addToSet(orgId);
-      await player.save();
-    }
+    if (!player) player = await Player.create({ userId: user._id, forPlayer: orgId });
+    else { player.forPlayer = orgId; await player.save(); }
   } catch (err) {
-    if (createdUser) await User.deleteOne({ _id: user._id }); // don't leave an orphan user
+    if (createdUser) await User.deleteOne({ _id: user._id });
     throw err;
   }
 
@@ -208,7 +222,8 @@ const removePlayer = catchAsync(async (req, res) => {
   let playingXIsDeleted = 0;
 
   if (teamIds.length) {
-    await Team.updateMany({ _id: { $in: teamIds } }, { $unset: { players: id } });
+    // await Team.updateMany({ _id: { $in: teamIds } }, { $unset: { players: id } });
+    await Team.updateMany({ _id: { $in: teamIds } }, { $pull: { players: id } });
     await Team.updateMany({ _id: { $in: teamIds }, captain: id }, { $unset: { captain: 1 } });
     await Team.updateMany({ _id: { $in: teamIds }, viceCaptain: id }, { $unset: { viceCaptain: 1 } });
     const r = await PlayingXI.deleteMany({
@@ -225,14 +240,14 @@ const removePlayer = catchAsync(async (req, res) => {
 });
 
 const list = catchAsync(async (req, res) => {
-    const { page = 1, limit = 20 } = req.query;
-    const organizer = await User.find(
-        { role: 'organizer' },
-        { _id: 1, email: 1, name: 1, phone: 1 }
-    )
-        .skip((page - 1) * limit)
-        .limit(Number(limit));
-    apiResponse(res, 200, 'Organizers fetched', organizer);
+  const { page = 1, limit = 20 } = req.query;
+  const organizer = await User.find(
+    { role: 'organizer' },
+    { _id: 1, email: 1, name: 1, phone: 1 }
+  )
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+  apiResponse(res, 200, 'Organizers fetched', organizer);
 });
 
 module.exports = { list, createPlayer, listPlayers, playerStats, removePlayer };

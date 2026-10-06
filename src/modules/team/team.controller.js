@@ -1,4 +1,4 @@
-const { Team, TeamPlayer, Player } = require('../../models');
+const { Team, TeamPlayer, Player, PlayingXI } = require('../../models');
 const catchAsync = require('../../utils/catchAsync');
 const apiResponse = require('../../utils/apiResponse');
 const ApiError = require('../../utils/apiError');
@@ -14,78 +14,6 @@ const getById = catchAsync(async (req, res) => {
   if (!team) throw new ApiError(404, 'Team not found');
   apiResponse(res, 200, 'Team fetched', team);
 });
-
-// const list = catchAsync(async (req, res) => {
-//   const { page = 1, limit = 20 } = req.query;
-//   const team = await Team.aggregate([
-//     {
-//       $match: {
-//         managerId: new mongoose.Types.ObjectId(req.user.id)
-//       }
-//     },
-//     {
-//       $skip: (Number(page) - 1) * limit
-//     },
-//     {
-//       $limit: Number(limit)
-//     }
-//   ]);
-//   apiResponse(res, 200, 'Teams fetched', team);
-// });
-
-
-// const list = catchAsync(async (req, res) => {
-//   const { page = 1, limit = 20 } = req.query;
-
-//   const teams = await Team.aggregate([
-//     {
-//       $match: {
-//         managerId: new mongoose.Types.ObjectId(req.user.id)
-//       }
-//     },
-//     {
-//       $sort: { createdAt: -1 }
-//     },
-//     {
-//       $skip: (Number(page) - 1) * Number(limit)
-//     },
-//     {
-//       $limit: Number(limit)
-//     },
-
-//     // ---- Populate players (Player[]), each Player nested-populated with its User ----
-//     {
-//       $lookup: {
-//         from: 'players',
-//         let: { playerIds: '$players' },
-//         pipeline: [
-//           {
-//             $match: {
-//               $expr: { $in: ['$_id', '$$playerIds'] }
-//             }
-//           },
-//           {
-//             $lookup: {
-//               from: 'users',
-//               localField: 'userId',
-//               foreignField: '_id',
-//               as: 'userId'
-//             }
-//           },
-//           {
-//             $unwind: {
-//               path: '$userId',
-//               preserveNullAndEmptyArrays: true
-//             }
-//           }
-//         ],
-//         as: 'players'
-//       }
-//     }
-//   ]);
-
-//   apiResponse(res, 200, 'Teams fetched', teams);
-// });
 
 const list = catchAsync(async (req, res) => {
   const { page = 1, limit = 20 } = req.query;
@@ -180,9 +108,8 @@ const listPlayers = catchAsync(async (req, res) => {
   apiResponse(res, 200, 'Team players fetched', players);
 });
 
-
 const deleteTeam = catchAsync(async (req, res) => {
-  const team = await Team.findByIdAndDelete(req.params.id);
+  const team = await Team.findOneAndDelete({ _id: req.params.id, managerId: req.user.id });
   if (!team) return apiResponse(res, 404, 'Team not found');
   await PlayingXI.deleteMany({ teamId: team._id });
   apiResponse(res, 200, 'Team deleted');

@@ -15,4 +15,5 @@ module.exports = {
   PlayerStats: require('./playerStats.model'),
   TeamStats: require('./teamStats.model'),
   Notification: require('./notification.model'),
+  Scorer: require('./scorer.model'),
 };

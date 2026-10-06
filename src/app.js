@@ -12,7 +12,17 @@ const { apiLimiter } = require('./middlewares/rateLimiter.middleware');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: env.clientUrl, credentials: true }));
+app.use(cors({ 
+  // origin: env.clientUrl, 
+  origin:'*',
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true 
+}));
+app.use((req, res, next) => {
+  console.log("METHOD:", req.method);
+  console.log("ORIGIN:", req.headers.origin);
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -22,6 +32,8 @@ app.use('/api/v1', apiLimiter, routes);
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Cric League API is running' });
 });
+
+
 
 app.use(notFound);
 app.use(errorHandler);

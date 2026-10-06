@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Match, Tournament, Team, Venue, User } = require('../../models');
+const { Match, Tournament, Team, Venue, User, Scorer } = require('../../models');
 const apiResponse = require('../../utils/apiResponse');
 const catchAsync = require('../../utils/catchAsync');
 const { orgIdOf } = require('../../utils/orgId');
@@ -16,7 +16,12 @@ const FORMATS = Object.keys(DEFAULT_OVERS);
 
 // If tournaments / teams / venues are owned per organizer, put the owner filter here,
 // e.g. { tournament: { organizerId: orgId } }. Empty = no extra filter.
-const ownerScope = (orgId) => ({ tournament: {}, team: {}, venue: {} });
+// const ownerScope = (orgId) => ({ tournament: {}, team: {}, venue: {} });
+const ownerScope = (orgId) => ({
+  tournament: { organizerId: orgId },
+  team: { managerId: orgId },
+  venue: { createdBy: orgId },
+});
 
 const POPULATE = [
   { path: 'teamA', select: 'name logoUrl' },
@@ -42,6 +47,11 @@ async function validateInput(body, orgId, existing = null) {
   const venueId = asId(pick('venueId')) || null;
   const scorerId = asId(pick('scorerId')) || null;
   const format = pick('format') || 'T20';
+
+
+  // scorerId && scorerId !== asId(existing?.scorerId)
+  // ? Scorer.exists({ userId: scorerId, organizerId: orgId, status: 'active' })
+  // : true,
 
   if (!tournamentId) return { error: 'Tournament is required' };
   if (!teamA || !teamB) return { error: 'Both teams are required' };
@@ -72,7 +82,10 @@ async function validateInput(body, orgId, existing = null) {
     Tournament.exists({ _id: tournamentId, ...scope.tournament }),
     Team.countDocuments({ _id: { $in: [teamA, teamB] }, ...scope.team }),
     venueId ? Venue.exists({ _id: venueId, ...scope.venue }) : true,
-    scorerId ? User.exists({ _id: scorerId, role: 'scorer' }) : true,
+    // scorerId ? User.exists({ _id: scorerId, role: 'scorer' }) : true,
+    scorerId && scorerId !== asId(existing?.scorerId)
+      ? Scorer.exists({ userId: scorerId, organizerId: orgId, status: 'active' })
+      : true,
   ]);
   if (!tournament) return { error: 'Tournament not found' };
   if (teamCount !== 2) return { error: 'One or both teams were not found' };
@@ -108,14 +121,22 @@ const findMine = async (req) => {
 
 // GET /matches/options: everything the Schedule form needs in one call
 const options = catchAsync(async (req, res) => {
+  const orgId = orgIdOf(req);
   const scope = ownerScope(orgIdOf(req));
-  const [tournaments, teams, venues, scorers] = await Promise.all([
+
+  const [tournaments, teams, venues, scorerProfiles] = await Promise.all([
     Tournament.find(scope.tournament).select('name format overs').sort({ createdAt: -1 }).limit(200).lean(),
-    Team.find({ ...scope.team, status: { $nin: ['inactive', 'blocked'] } })
+    Team.find({ ...scope.team, status: { $nin: ['suspended'] } })
       .select('name logoUrl').sort({ name: 1 }).limit(500).lean(),
     Venue.find(scope.venue).select('name address').sort({ name: 1 }).limit(200).lean(),
-    User.find({ role: 'scorer', status: 'approved' }).select('name email').sort({ name: 1 }).limit(200).lean(),
+    // was: User.find({ role: 'scorer', status: 'approved' }) — which listed every scorer in the system
+    Scorer.find({ organizerId: orgId, status: 'active' }).populate('userId', 'name email').lean(),
   ]);
+
+  const scorers = scorerProfiles
+    .filter((p) => p.userId)
+    .map((p) => ({ _id: p.userId._id, name: p.userId.name, email: p.userId.email }));
+
   apiResponse(res, 200, 'Options fetched', { tournaments, teams, venues, scorers });
 });
 
@@ -182,6 +203,7 @@ const create = catchAsync(async (req, res) => {
 
 // PATCH /matches/:id: only before the match has started
 const update = catchAsync(async (req, res) => {
+  console.log(req)
   const match = await findMine(req);
   if (!match) return apiResponse(res, 404, 'Match not found');
   if (match.status !== 'scheduled') {
