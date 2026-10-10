@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
-const { Match, Tournament, Team, Venue, User, Scorer } = require('../../models');
+const { Match, Tournament, Team, Venue, User, Scorer, Innings, PlayingXI } = require('../../models');
 const apiResponse = require('../../utils/apiResponse');
 const catchAsync = require('../../utils/catchAsync');
 const { orgIdOf } = require('../../utils/orgId');
+const { snapshotXIs } = require('../scoring/scoring.service');
+const { registerMatchTeams } = require('../scoring/stats.service');
 
+const objectId = (id) => new mongoose.Types.ObjectId(id);
 const GROUPS = {
   live: ['live', 'innings_break'],
   upcoming: ['scheduled', 'toss_done'],
@@ -184,10 +187,54 @@ const list = catchAsync(async (req, res) => {
       .lean(),
     Match.countDocuments(filter),
   ]);
+
+  const idss = items.map((m) => m._id);
+  const inningsDocs = idss.length
+    ? await Innings.find({ matchId: { $in: idss } })
+      .sort({ inningsNumber: 1 })
+      .select('matchId inningsNumber battingTeam totalRuns totalWickets totalOvers legalBalls target status')
+      .lean()
+    : [];
+  const byMatch = {};
+  inningsDocs.forEach((i) => {
+    const k = String(i.matchId);
+    if (!byMatch[k]) byMatch[k] = [];
+    byMatch[k].push(i);
+  });
+
+  items.forEach((m) => { m.innings = byMatch[String(m._id)] || []; });
   apiResponse(res, 200, 'Matches fetched', { items, total, page, limit });
 });
 
 // POST /matches
+// const create = catchAsync(async (req, res) => {
+//   const orgId = orgIdOf(req);
+//   const { error, data, status } = await validateInput(req.body, orgId);
+//   if (error) return apiResponse(res, status || 400, error);
+//   const [teamA, teamB] = await Promise.all([
+//     PlayingXI.findOne({ teamId: objectId(data.teamA) }),
+//     PlayingXI.findOne({ teamId: objectId(data.teamB) })
+//   ]);
+//   if (!teamA) return apiResponse(res, 400, 'TeamA does not created their playingXL yet!');
+//   if (!teamB) return apiResponse(res, 400, 'TeamB does not created their playingXL yet!');
+
+//   const last = await Match.findOne({ tournamentId: data.tournamentId })
+//     .sort({ matchNumber: -1 }).select('matchNumber').lean();
+//   const match = await Match.create({ ...data, matchNumber: (last?.matchNumber || 0) + 1, createdBy: orgId });
+//   await Promise.all([
+//     PlayingXI.updateOne(
+//       { _id: teamA._id },
+//       { $set: { matchId: match._id } }
+//     ),
+//     PlayingXI.updateOne(
+//       { _id: teamB._id },
+//       { $set: { matchId: match._id } }
+//     )
+//   ]);
+//   const populated = await Match.findById(match._id).populate(POPULATE).lean();
+//   apiResponse(res, 201, 'Match scheduled', populated);
+// });
+
 const create = catchAsync(async (req, res) => {
   const orgId = orgIdOf(req);
   const { error, data, status } = await validateInput(req.body, orgId);
@@ -195,10 +242,21 @@ const create = catchAsync(async (req, res) => {
 
   const last = await Match.findOne({ tournamentId: data.tournamentId })
     .sort({ matchNumber: -1 }).select('matchNumber').lean();
-
   const match = await Match.create({ ...data, matchNumber: (last?.matchNumber || 0) + 1, createdBy: orgId });
-  const populated = await Match.findById(match._id).populate(POPULATE).lean();
-  apiResponse(res, 201, 'Match scheduled', populated);
+
+  try {
+    await snapshotXIs(match);   // checks both teams have an XI, then copies each one for this match
+    await registerMatchTeams(match);
+    const populated = await Match.findById(match._id).populate(POPULATE).lean();
+    return apiResponse(res, 201, 'Match scheduled', populated);
+  } catch (err) {
+    // anything failed: remove the match and its copies
+    await Promise.all([
+      Match.deleteOne({ _id: match._id }),
+      PlayingXI.deleteMany({ matchId: match._id }),
+    ]);
+    throw err;
+  }
 });
 
 // PATCH /matches/:id: only before the match has started

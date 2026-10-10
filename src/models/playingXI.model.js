@@ -33,7 +33,7 @@ const playingXISchema = new Schema(
   },
   { timestamps: true }
 );
-
+playingXISchema.index({ matchId: 1 });
 // one XI per team + format (+ match, when it's attached to one)
 playingXISchema.index({ teamId: 1, format: 1, matchId: 1 }, { unique: true });
 

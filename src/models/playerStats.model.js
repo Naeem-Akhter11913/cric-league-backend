@@ -13,7 +13,8 @@ const playerStatsSchema = new Schema(
     catches: { type: Number, default: 0 },
     runOuts: { type: Number, default: 0 },
     highestScore: { type: Number, default: 0 },
-    bestBowling: { type: String },
+    // bestBowling: { type: String },
+    ballsBowled: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

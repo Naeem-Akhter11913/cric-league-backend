@@ -25,7 +25,8 @@ async function loadScorers(orgId) {
   const rows = profiles.filter((p) => p.userId);          // skip profiles whose user was deleted
   const ids = rows.map((p) => p.userId._id);
 
-  const [scored, upcoming, balls] = ids.length
+  const [scored, upcoming] = ids.length
+  // const [scored, upcoming, balls] = ids.length
     ? await Promise.all([
         Match.aggregate([
           { $match: { createdBy: orgId, scorerId: { $in: ids }, status: 'completed' } },
@@ -35,25 +36,20 @@ async function loadScorers(orgId) {
           { $match: { createdBy: orgId, scorerId: { $in: ids }, status: { $in: UPCOMING } } },
           { $group: { _id: '$scorerId', count: { $sum: 1 } } },
         ]),
-        Ball.aggregate([
-          { $match: { recordedBy: { $in: ids } } },
-          { $group: { _id: '$recordedBy', total: { $sum: 1 }, corrected: { $sum: { $cond: ['$isCorrected', 1, 0] } } } },
-        ]),
+        // Ball.aggregate([
+        //   { $match: { recordedBy: { $in: ids } } },
+        //   { $group: { _id: '$recordedBy', total: { $sum: 1 }, corrected: { $sum: { $cond: ['$isCorrected', 1, 0] } } } },
+        // ]),
+
       ])
     : [[], [], []];
 
   const scoredMap = new Map(scored.map((x) => [String(x._id), x.count]));
   const upcomingMap = new Map(upcoming.map((x) => [String(x._id), x.count]));
-  const ballMap = new Map(balls.map((x) => [String(x._id), x]));
-
+  // const ballMap = new Map(balls.map((x) => [String(x._id), x]));
   return rows.map((p) => {
     const key = String(p.userId._id);
-    const b = ballMap.get(key);
-    const ballsRecorded = b?.total || 0;
-    const accuracy =
-      ballsRecorded >= MIN_BALLS_FOR_RATING
-        ? Math.round((1 - b.corrected / b.total) * 1000) / 10
-        : null;
+    const accuracy = p.accuracy ?? null;
     return {
       _id: p._id,
       userId: p.userId,
@@ -64,11 +60,34 @@ async function loadScorers(orgId) {
       createdAt: p.createdAt,
       matchesScored: scoredMap.get(key) || 0,
       upcomingMatches: upcomingMap.get(key) || 0,
-      ballsRecorded,
+      ballsRecorded: p.ballsRecorded || 0,
       accuracy,
       rating: ratingOf(accuracy),
     };
   });
+  // return rows.map((p) => {
+  //   const key = String(p.userId._id);
+  //   const b = ballMap.get(key);
+  //   const ballsRecorded = b?.total || 0;
+  //   const accuracy =
+  //     ballsRecorded >= MIN_BALLS_FOR_RATING
+  //       ? Math.round((1 - b.corrected / b.total) * 1000) / 10
+  //       : null;
+  //   return {
+  //     _id: p._id,
+  //     userId: p.userId,
+  //     city: p.city || '',
+  //     experienceYears: p.experienceYears || 0,
+  //     isChief: !!p.isChief,
+  //     status: p.status,
+  //     createdAt: p.createdAt,
+  //     matchesScored: scoredMap.get(key) || 0,
+  //     upcomingMatches: upcomingMap.get(key) || 0,
+  //     ballsRecorded,
+  //     accuracy,
+  //     rating: ratingOf(accuracy),
+  //   };
+  // });
 }
 
 const findMine = (req) => {

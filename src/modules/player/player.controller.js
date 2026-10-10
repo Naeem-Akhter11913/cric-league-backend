@@ -34,16 +34,7 @@ const list = catchAsync(async (req, res) => {
     .limit(Number(limit));
   apiResponse(res, 200, 'Players fetched', players);
 });
-// const list = catchAsync(async (req, res) => {
-//   const { page = 1, limit = 20 } = req.query;
-//   const organizer = await User.find(
-//     { role: 'organizer' },
-//     { _id: 1, name: 1, email: 1 }
-//   )
-//     .skip((page - 1) * limit)
-//     .limit(Number(limit));
-//   apiResponse(res, 200, 'Players fetched', organizer);
-// });
+
 
 const updateMyProfile = catchAsync(async (req, res) => {
 

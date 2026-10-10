@@ -9,7 +9,7 @@ router.use('/teams', require('../modules/team/team.routes'));
 // Remaining modules follow the same pattern once fleshed out:
 router.use('/tournaments', require('../modules/tournament/tournament.routes'));
 router.use('/matches', require('../modules/match/match.routes'));
-// router.use('/scoring', require('../modules/scoring/scoring.routes'));
+router.use('/scoring', require('../modules/scoring/scoring.routes'));
 router.use('/venues', require('../modules/venue/venue.routes'));
 router.use('/scorers', require('../modules/scorer/scorer.routes'));
 // router.use('/stats', require('../modules/stats/stats.routes'));

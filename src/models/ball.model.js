@@ -35,5 +35,6 @@ const ballSchema = new Schema(
 );
 
 ballSchema.index({ inningsId: 1, over: 1, ballInOver: 1 });
+ballSchema.index({ matchId: 1 });
 
 module.exports = model('Ball', ballSchema);
