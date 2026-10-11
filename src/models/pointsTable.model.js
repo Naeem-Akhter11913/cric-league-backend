@@ -11,6 +11,10 @@ const pointsTableSchema = new Schema(
     noResult: { type: Number, default: 0 },
     points: { type: Number, default: 0 },
     netRunRate: { type: Number, default: 0 },
+    runsFor: { type: Number, default: 0 },
+    ballsFor: { type: Number, default: 0 },        // balls faced (all-out counts as the full quota)
+    runsAgainst: { type: Number, default: 0 },
+    ballsAgainst: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

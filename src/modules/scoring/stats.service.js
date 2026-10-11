@@ -46,7 +46,7 @@ async function computeTeam(teamId, tournamentId) {
   const matches = await Match.find(filter).select('overs status result').lean();
   const innings = matches.length
     ? await Innings.find({ matchId: { $in: matches.map((m) => m._id) } })
-        .select('matchId battingTeam totalRuns totalWickets legalBalls endReason').lean()
+      .select('matchId battingTeam totalRuns totalWickets legalBalls endReason').lean()
     : [];
   const byMatch = new Map();
   innings.forEach((i) => {
@@ -88,7 +88,12 @@ async function computeTeam(teamId, tournamentId) {
     ballsFor && ballsAgainst ? round(runsFor / (ballsFor / 6) - runsAgainst / (ballsAgainst / 6), 3) : 0;
 
   return {
-    points: { played, won, lost, tied, noResult, points: won * POINTS.win + tied * POINTS.tie + noResult * POINTS.noResult, netRunRate },
+    // points: { played, won, lost, tied, noResult, points: won * POINTS.win + tied * POINTS.tie + noResult * POINTS.noResult, netRunRate },
+    points: {
+      played, won, lost, tied, noResult,
+      points: won * POINTS.win + tied * POINTS.tie + noResult * POINTS.noResult,
+      netRunRate, runsFor, ballsFor, runsAgainst, ballsAgainst,
+    },
     stats: {
       matchesPlayed: won + lost + tied,
       wins: won,
@@ -251,4 +256,4 @@ async function recomputeAfterMatch(match) {
   await recomputeScorer(match.scorerId);
 }
 
-module.exports = { registerMatchTeams, recomputeAfterMatch };
+module.exports = { registerMatchTeams, recomputeAfterMatch, POINTS };

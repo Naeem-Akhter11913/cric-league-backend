@@ -15,5 +15,7 @@ router.post('/:matchId/batter', guard, c.selectBatter);
 router.post('/:matchId/bowler', guard, c.selectBowler);
 router.post('/:matchId/ball', guard, c.recordBall);
 router.delete('/:matchId/ball/last', guard, c.undo);
+router.get('/:matchId/live', guard, c.live);
+
 
 module.exports = router;

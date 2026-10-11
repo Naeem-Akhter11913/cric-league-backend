@@ -111,8 +111,18 @@ async function validateInput(body, orgId, existing = null) {
   ]);
   if (teamClash) return { error: 'One of these teams already has a match around that time', status: 409 };
   if (venueClash) return { error: 'This venue is already booked around that time', status: 409 };
+  const parseNames = (v) =>
+    (Array.isArray(v) ? v : String(v || '').split(','))
+      .map((s) => String(s).trim()).filter(Boolean).slice(0, 3);
 
-  return { data: { tournamentId, teamA, teamB, venueId, scorerId, format, overs, scheduledAt } };
+  // return { data: { tournamentId, teamA, teamB, venueId, scorerId, format, overs, scheduledAt } };
+
+  return {
+    data: {
+      tournamentId, teamA, teamB, venueId, scorerId, format, overs, scheduledAt,
+      umpires: parseNames(pick('umpires')), tvUmpire: String(pick('tvUmpire') || '').trim()
+    }
+  };
 }
 
 const findMine = async (req) => {

@@ -13,12 +13,12 @@ router.use('/scoring', require('../modules/scoring/scoring.routes'));
 router.use('/venues', require('../modules/venue/venue.routes'));
 router.use('/scorers', require('../modules/scorer/scorer.routes'));
 // router.use('/stats', require('../modules/stats/stats.routes'));
-// router.use('/points-table', require('../modules/pointsTable/pointsTable.routes'));
+router.use('/points-table', require('../modules/pointsTable/pointsTable.routes'));
 // router.use('/admin', require('../modules/superAdmin/superAdmin.routes'));
 router.use('/organizer', require('../modules/organizer/organizer.routes'));
 // router.use('/notifications', require('../modules/notification/notification.routes'));
 router.use('/playing', require('../modules/playingXI/playingXI.routes'));
-
+router.use('/statistics', require('../modules/statistics/statistics.routes'));
 router.get('/health', (req, res) => res.json({ success: true, message: 'API is healthy' }));
 
 module.exports = router;

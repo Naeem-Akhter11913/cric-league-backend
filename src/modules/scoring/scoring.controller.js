@@ -30,7 +30,9 @@ const respond = async (res, match, message) =>
 
 // GET /scoring/my-matches
 const myMatches = catchAsync(async (req, res) => {
-  const filter = req.user.role === 'scorer' ? { scorerId: req.user.id } : { createdBy: req.user.id };
+  const filter = req.user.role === 'scorer' ?
+    { scorerId: req.user.id } :
+    { createdBy: req.user.id };
   filter.status = { $in: ['scheduled', 'toss_done', 'live', 'innings_break'] };
   const items = await Match.find(filter)
     .sort({ scheduledAt: 1 }).limit(50)
@@ -93,8 +95,14 @@ const undo = catchAsync(async (req, res) => {
   if (data.current) {
     safeEmit(broadcastBallScored, match._id, { matchId: match._id, runs: data.current.runs, wickets: data.current.wickets, overs: data.current.overs, lastBalls: data.current.lastBalls });
   }
-  
+
   apiResponse(res, 200, 'Last ball removed', data);
 });
 
-module.exports = { myMatches, state, toss, startInnings, selectBatter, selectBowler, recordBall, undo };
+const live = catchAsync(async (req, res) => {
+  const match = await getMatch(req);
+  apiResponse(res, 200, 'Live score', await svc.buildLive(match._id));
+});
+
+// module.exports = { myMatches, state, toss, startInnings, selectBatter, selectBowler, recordBall, undo };
+module.exports = { myMatches, state, live, toss, startInnings, selectBatter, selectBowler, recordBall, undo };
